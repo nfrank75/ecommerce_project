@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+
+{% include "partials/top_page.html" with name="cart" %}
+
+<div  class="main_content">
+    <div  class="section">
+        <div  class="container">
+            <div  class="row">
+                <div  class="col-12">
+                    <div  class="table-responsive shop_cart_table">
+                        <table  class="table">
+                            <thead >
+                                <tr >
+                                    <th  class="product-thumbnail">&nbsp;</th>
+                                    <th  class="product-name">Product</th>
+                                    <th  class="product-price">Price</th>
+                                    <th  class="product-quantity">Quantity</th>
+                                    <th  class="product-subtotal">Sub Total</th>
+                                    <th  class="product-remove">Remove</th>
+                                </tr>
+                            </thead>
+                            <tbody >
+
+                                {% for item in cart.items %}
+                                    <tr >
+                                        <td class="product-thumbnail">
+                                            <a>
+                                                <img width="50" alt="product1" src="{{item.product.image}}">
+                                            </a>
+                                        </td>
+                                        <td data-title="Product" class="product-name">
+                                            <a>{{item.product.name}}</a>
+                                        </td>
+                                        <td data-title="Price" class="product-price">
+                                            {{ item.product.solde_price }}  FCFA
+                                        </td>
+                                        <td data-title="Quantity" class="product-quantity">
+                                            <div class="quantity">
+                                                <a href="{% url 'shop:remove_from_cart' item.product.id 1 %}" class="minus">-<a>
+                                                <input  type="text" name="quantity" title="Qty" value="{{item.quantity}}" size="4" class="qty">
+                                                <a href="{% url 'shop:add_to_cart' item.product.id %}" class="plus">+<a>
+                                            </div>
+                                        </td>
+                                        <td data-title="Total" class="product-subtotal">
+                                            
+                                            {{ item.sub_total }} FCFA
+                                        </td>
+                                        <td data-title="Remove" class="product-remove">
+                                            <a href="{% url 'shop:remove_from_cart' item.product.id item.quantity %}">
+                                                <i class="ti-close"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div  class="row">
+                <div  class="col-12">
+                    <div  class="medium_divider"></div>
+                    <div  class="divider center_icon"><i 
+                            class="ti-shopping-cart-full"></i></div>
+                    <div  class="medium_divider"></div>
+                </div>
+            </div>
+            <div  class="row">
+                <div  class="col-md-6">
+                    <div  class="border p-3 p-md-4">
+                        <div  class="heading_s1 mb-3">
+                            <h6 >Carriers</h6>
+                        </div>
+                        <select  class='form-control' name='carrier_id' id='carrier_id'>
+                            {% for carrier in carriers %}
+                                <option {% if cart.carrier_id == carrier.id %} selected {% endif %} value="{{carrier.id}}"> {{ carrier.name }} ({{ carrier.price }} FCFA ) </option>
+                            {% endfor %}
+                        </select>
+                        </div>
+                </div>
+                <div  class="col-md-6">
+                    <div  class="border p-3 p-md-4">
+                        <div  class="heading_s1 mb-3">
+                            <h6 >Cart Totals</h6>
+                        </div>
+
+                        <div  class="table-responsive">
+                            <table  class="table">
+                                <tbody >
+                                    <tr >
+                                        <td class="cart_total_label">Cart Subtotal</td>
+                                        <td class="cart_total_amount">{{ cart.sub_total_ttc }} FCFA</td>
+                                    </tr>
+                                    <tr >
+                                        <td class="cart_total_label">Taxe</td>
+                                        <td class="cart_total_amount">{{ cart.taxe_amount }} FCFA</td>
+                                    </tr>
+                                    <tr >
+                                        <td class="cart_total_label">Shipping ({{cart.carrier_name}})</td>
+                                        <td class="cart_total_amount">{{cart.shipping_price}} FCFA</td>
+                                    </tr>
+                                    <tr >
+                                        <td class="cart_total_label">Total</td>
+                                        <td class="cart_total_amount"><strong>{{ cart.sub_total_with_shipping }} FCFA</strong>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div><a  routerlink="/checkout" class="btn btn-fill-out"
+                            ng-reflect-router-link="/checkout" href="/checkout">Proceed To CheckOut</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Sélection des éléments clés du DOM
+    const carrierSelect = document.querySelector('select#carrier_id');
+    const shippingRow = document.querySelector('td.cart_total_label:contains("Shipping")');
+    const shippingLabel = shippingRow ? shippingRow : null;
+    const shippingAmount = shippingRow ? shippingRow.nextElementSibling : null;
+    const totalAmount = document.querySelector('strong');
+    
+    // Sélection des autres montants pour le calcul
+    const subtotalRow = document.querySelector('td.cart_total_label:contains("Cart Subtotal")');
+    const taxRow = document.querySelector('td.cart_total_label:contains("Taxe")');
+    const subtotalAmount = subtotalRow ? subtotalRow.nextElementSibling : null;
+    const taxAmount = taxRow ? taxRow.nextElementSibling : null;
+
+    // Assurez-vous que tous les éléments nécessaires existent
+    if (carrierSelect && shippingLabel && shippingAmount && totalAmount && subtotalAmount && taxAmount) {
+
+        // Fonction pour mettre à jour l'affichage
+        const updateCarrierDisplay = (event) => {
+            const selectedOption = event.target.options[event.target.selectedIndex];
+            const fullText = selectedOption.textContent;
+            
+            // Extraire le nom du transporteur et le prix
+            const regex = /(.*)\s*\((\d+\.?\d*)\s*FCFA\s*\)/;
+            const match = fullText.match(regex);
+
+            let carrierName = "Unknown Carrier";
+            let carrierPrice = 0;
+
+            if (match && match.length >= 3) {
+                carrierName = match[1].trim();
+                carrierPrice = parseFloat(match[2]);
+            }
+
+            // Mettre à jour le nom du transporteur dans le libellé "Shipping"
+            shippingLabel.textContent = `Shipping (${carrierName})`;
+
+            // Mettre à jour le montant de la livraison
+            shippingAmount.textContent = `${carrierPrice.toFixed(2)} FCFA`;
+
+            // Mettre à jour le total
+            const subtotal = parseFloat(subtotalAmount.textContent.replace(' FCFA', ''));
+            const tax = parseFloat(taxAmount.textContent.replace(' FCFA', ''));
+            const newTotal = subtotal + tax + carrierPrice;
+            
+            totalAmount.textContent = `${newTotal.toFixed(2)} FCFA`;
+        };
+
+        // Ajouter l'écouteur d'événement
+        carrierSelect.addEventListener('change', updateCarrierDisplay);
+
+        // Appel initial pour s'assurer que l'affichage est correct au chargement de la page
+        updateCarrierDisplay({ target: carrierSelect });
+    } else {
+        console.error("Un ou plusieurs éléments du DOM sont manquants pour la mise à jour des totaux.");
+    }
+</script>
+{% endblock %}
+
+

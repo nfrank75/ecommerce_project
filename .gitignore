@@ -1,0 +1,13 @@
+venv
+template_ecommerce.zip
+__pychage__/
+/__pychage__
+staticfiles
+static/
+assets/
+template_ecommerce/
+template_ecommerce.zip
+database/
+media/
+__pycache__/
+template_ecommerce/

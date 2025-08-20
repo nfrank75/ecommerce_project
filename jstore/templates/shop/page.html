@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+
+{% include "partials/top_page.html" with name=page.name %}
+
+<div class="section pb_70">
+
+    <div class="container">
+        <p> {{ page.context }} </p>
+    </div>
+</div>
+
+
+{% endblock content %}

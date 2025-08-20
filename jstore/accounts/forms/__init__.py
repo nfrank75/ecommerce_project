@@ -1,0 +1,3 @@
+from .CustomLoginForm import CustomLoginForm
+from .CustomUserRegisterForm import CustomUserRegisterForm
+from .ResetPasswordForm import ResetPasswordForm
