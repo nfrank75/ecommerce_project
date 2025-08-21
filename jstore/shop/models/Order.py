@@ -28,4 +28,4 @@ class Order(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"Order #{self.id} by {self.client_name} - Status: {self.status()}"
+        return  self.client_name

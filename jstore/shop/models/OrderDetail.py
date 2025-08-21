@@ -23,4 +23,4 @@ class OrderDetail(models.Model):
         verbose_name_plural = 'Order Details'
 
     def __str__(self):
-        return f"Order Detail for {self.product_name} in Order #{self.order.id}"
+        return self.product_name
