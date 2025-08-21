@@ -13,6 +13,8 @@ from .models.Social import Social
 from .models.Page import Page
 from .models.NavCollection import NavCollection
 from .models.Carrier import Carrier
+from .models.Order import Order
+from .models.OrderDetail import OrderDetail
 
 
 class SliderAdmin(admin.ModelAdmin):
@@ -129,7 +131,18 @@ class CarrierAdmin(admin.ModelAdmin):
     display_image.short_description = 'image'
     exclude = ('slug',)
 
-    
+class OrderAdmin(admin.ModelAdmin):
+    list_display = ('client_name', 'billing_address', 'shipping_address', 'quantity', 'taxe', 'order_cost', 'order_cost_ttc', 'is_paid', 'carrier_name', 'carrier_price', 'payment_method', 'status', 'created_at', 'updated_at')
+    list_display_links = ('client_name', 'billing_address', 'shipping_address')
+    list_filter = ('status',)
+    search_fields = ('client_name',)
+
+class OrderDetailAdmin(admin.ModelAdmin):
+    list_display = ('product_name', 'product_description', 'solde_price', 'regular_price', 'quantity', 'taxe', 'sub_total_ht', 'sub_total_ttc', 'created_at', 'updated_at', 'order')
+    list_display_links = ('product_name', 'product_description')
+    search_fields = ('product_name',)
+    list_filter = ('order__client_name',)
+
 admin.site.register(Slider, SliderAdmin)
 
 admin.site.register(Collection  , CollectionAdmin)
@@ -149,3 +162,6 @@ admin.site.register(Page  , PageAdmin)
 admin.site.register(NavCollection  , NavCollectionAdmin)
 
 admin.site.register(Carrier  , CarrierAdmin)
+
+admin.site.register(Order, OrderAdmin)
+admin.site.register(OrderDetail, OrderDetailAdmin)

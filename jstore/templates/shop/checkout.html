@@ -13,7 +13,7 @@
                         class="fas fa-user"></i>Returning customer? <a
                         href="#loginform" data-bs-toggle="collapse"
                        aria-expanded="false" class="collapsed">Click here to login</a></span></div>
-           <div  id="loginform" class="panel-collapse collapse login_form">
+                    <div  id="loginform" class="panel-collapse collapse login_form">
                <div  class="panel-body">
                    <p >If you have shopped with us before, please enter your
                        details below. If you are a new customer, please proceed to the Billing &amp;
@@ -90,6 +90,8 @@
                         {% if user.addresses.all %}
                             <!-- chemin 2 !-->
                             <select name='address_billing_id' id='address_billing_id' class='form-control'>
+                                <option value="">--- choose an address  ---</option> 
+                                <option value="{{address.id}}" {% if address.id == address_billing_id %}{%endif%}
                                 {% for address in user.addresses.all %}
                                     <option value="{{address.id}}">
                                         {{address.name}} - {{address.street}} {{address.code_postal}} {{address.city}} {{address.country}}
@@ -101,16 +103,18 @@
                                 <label class="form-check-label" for="add_new_adress">Do You Want to Add A New Address?</label>
                             </div>
                             <div class='form-check form-switch'>
-                                <input  class='newShippingAddress form-check-input' type='checkbox' id='new_shipping_adress'>
-                                <label class="form-check-label" for="add_new_adress">Do You Want to use another adddress for shipping ?</label>
+                                <input name="new_shipping_address"  class='newShippingAddress form-check-input' type='checkbox' id='new_shipping_adress'
+                                {% if new_shipping_address == 'true' %} checked {% endif %}>
+                                <label class="form-check-label" for="flexSwitchCheckChecked">Do You Want to use another adddress for shipping ?</label>
                             </div>
-                            <div  class="shipping_address_form d-none">
+                            <div  class="shipping_address_form {% if new_shipping_address != 'true' %} d-none {% endif %}">
                                 <div  class="heading_s1">
                                     <h4 >Shipping Details</h4>
                                 </div>
                                 <select name='address_shipping_id' id='address_shipping_id' class='form-control d-none'>
                                 {% for address in user.addresses.all %}
-                                    <option value="{{address.id}}">
+                                    <option value="">--- choose an address ---</option>
+                                    <option value="{{address.id}}" {% if address.id == address_shipping_id %}{%endif%}>
                                         {{address.name}} - {{address.street}} {{address.code_postal}} {{address.city}} {{address.country}}
                                     </option>
                                 {% endfor %}
@@ -129,7 +133,16 @@
                                 <button type='submit' class="btn btn-success my-1">Save</button>
                             </form>
                         {% endif %}
+                    {% else %}
+                        <!-- circuit B !-->
+                        <form action="{% url 'shop:add_address' %}" method="post">
+                            {% csrf_token %}
+                            {{ address_form }}
+                            <button type='submit' class="btn btn-success my-1">Save</button>
+                        </form>
                     {% endif %}
+                        
+                            
 
                     <div  class="heading_s1">
                         <h4 >Change Carrier</h4>
@@ -239,9 +252,13 @@
                                 </div>
 
                             </div>
-                        </div><a  href="#" class="btn btn-fill-out btn-block">Pay now
-                            ({{ cart.sub_total_with_shipping }} FCFA)</a>
-                    </div>
+                            {% if ready_to_pay %}
+                                <a  href="#" class="btn btn-fill-out btn-block">Pay now
+                                    ({{ cart.sub_total_with_shipping }} FCFA)
+                                </a>
+                            {% endif %}
+                        </div>
+                        </div>
                 </div>
             </div>
         </div>
@@ -256,14 +273,29 @@
     // Sélection des éléments
     const loginForm = document.querySelector('form#login_form');
     const loginFormButton = document.querySelector('form#login_form button');
-    const addShippingAddressInput = document.querySelector('input.newShippingAddress');
-    const addAddressInput = document.querySelector('input.addNewAddress'); // Correction: querySelector
-    const addNewAddressForm = document.querySelector('form#addNewAddressForm'); // Correction: querySelector et renommage pour clarté
-    const carrierSelect = document.querySelector('select#carrier_id'); // Correction: querySelector et renommage pour clarté
-    const shippingAddressForm = document.querySelector('.shipping_address_form'); // Sélection du conteneur du formulaire de shipping
-    const addressBillingSelect = document.querySelector('select#address_billing_id'); // Sélection du sélecteur d'adresse de facturation
-    const addressShippingSelect = document.querySelector('select#address_shipping_id'); // Sélection du sélecteur d'adresse de livraison
+    const addShippingAddress = document.querySelector('input.newShippingAddress');
+    const addAddressInput = document.querySelector('input.addNewAddress');
+    const addNewAddressForm = document.querySelector('form#addNewAddressForm');
+    const shippingAddressForm = document.querySelector('.shipping_address_form');
+    const carrierForm = document.querySelector('select#carrier_id')
+    const bilingForm = document.querySelector('select#address_billing_id');
+    const billingForm = document.querySelector('select#address_billing_id');
+    const shippingForm = document.querySelector('select#address_shipping_id');
+    carrierForm?addEventListener('change', updateCarrier): null;
 
+    /*const updateCarrier = (event) =>{
+        carrierForm?.addEventListener('change', updateCarrier)
+
+    const displayForm = (event) => {
+        addAddressInput?.addEventListener('change', displayForm)
+        
+    const addShippingAddress = (event) => {
+        addShipppingAddress.addEventListener('change', displayForm)
+    
+    
+    const handleSubmit = (event) => {
+        loginFormButton.addEventListener('click', handleSubmit)
+    */
 
     // Fonction pour mettre à jour le transporteur
     const updateCarrier = (event) => {
@@ -291,8 +323,8 @@
     };
 
     // Ajout de l'écouteur d'événement pour le changement de transporteur
-    if (carrierSelect) {
-        carrierSelect.addEventListener('change', updateCarrier);
+    if (carrierForm) {
+        carrierForm.addEventListener('change', updateCarrier);
     }
 
     // Fonction pour afficher/masquer le formulaire d'ajout d'une nouvelle adresse de facturation
@@ -337,8 +369,8 @@
     };
 
     // Ajout de l'écouteur d'événement pour le checkbox "Do You Want to use another adddress for shipping ?"
-    if (addShippingAddressInput) {
-        addShippingAddressInput.addEventListener('change', displayShippingAddressForm);
+    if (addShippingAddress) {
+        addShippingAddress.addEventListener('change', displayShippingAddressForm);
     }
     const handleSubmit = (event) =>{
         event.preventDefault()

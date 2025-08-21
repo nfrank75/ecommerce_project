@@ -8,3 +8,5 @@ from .Social import Social
 from .Page import Page
 from .NavCollection import NavCollection
 from .Carrier import Carrier
+from .Order import Order
+from .OrderDetail import OrderDetail
